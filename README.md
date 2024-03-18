@@ -1,0 +1,1 @@
+This is my (Jared Choy) submission of the STA 207 Final Project Report. I have the HTML, R Markdown file, and my references page here. Thank you for a great quarter, hope the rest of the year treats you well!

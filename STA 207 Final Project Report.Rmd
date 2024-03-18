@@ -1,0 +1,516 @@
+---
+title: "STA 207 Final Project Report"
+author: "Jared Choy"
+date: "2024-03-18"
+output:
+  html_document:
+    df_print: paged
+abstract: In this report, we investigate the myriad of factors that influence first-grade students' mathematical test scores, in relation to the qualities that teacher's possess. This study aims to measure the effectiveness of a teacher in regards to socioeconomic indicators, school, and class size. Using data from Project STAR, a stalwart study conducted with the hopes of furthering education; we create a summary dataset encapsulating the background of the teachers within the study. In our analysis, we reveal significant association regarding class size, location, and specific school with regards to raw math scores. Analysis was conducted using modeling techniques, hypothesis tests, and sensitivity analyses. In our findings, we conclude that the relationship between all of our factors are indeed significant, and that these factors are just as important then as they are now. This project aims to elucidate the truths of adolescent academic success, and the need for more educational opportunities. By probing the relationship between these factors, we provide measured insights for a brighter generation of scholars.  
+bibliography: references.bib
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{=html}
+<style>
+body, p {
+  background-color: white;
+  color: black; 
+  font-family: Times New Roman;
+}
+</style>
+```
+# Dataset and Questions of Interest
+
+As the number of students receiving an education is ever increasing in the United States, it is crucial to understand the educational factors that are congruent to intellectual success. A notable way to do so, is to look back in history and observe how the educational landscape has evolved.
+
+In this project, we want to ask a few key questions that we hope to elucidate the truths regarding educational policy and value. In doing so, our aim is to shed pedagogical insight on the the factors that influence how well a student is set up for success; especially in the infancy of their educational careers.
+
+Questions we want to probe include the following:
+
+-   **What role do class sizes have on mathematical test scores for students? If so, what class size is associated with the highest scaled math scores?**
+
+-   **Do identity indicators like location play a role in a teacher's math scores? If so, what city descriptor is associated with the highest or lowest scaled math socres?**
+
+-   **Does the specific school have any effect on determining the output of a child's mathematics scores?**
+
+In our analysis, we will only concern ourselves with that of the first grader math scores. Additionally, we have a myriad of key variables we wish to highlight including: `gender`, `race`, `g1schid` `g1classtype`, `g1tgen`, `g1trace`, `g1thighd`, `g1tyears`, `g1classs`, `g1maths`, `g1surban`, and `g1math_b`. The `gender` and `race` variables describes an individual student's gender and race identity. The g1 variables all describe a teacher's personal identity or a specific school's demographics.
+
+| Variable    | Description                                                             |
+|------------------------------------|------------------------------------|
+| gender      | 1: Male, 2: Female                                                      |
+| race        | 1: White, 2: Black, 3: Asian, 4: Hispanic, 5: Native American, 6: Other |
+| g1schid     | School ID                                                               |
+| g1classtype | Class size label 1: Small Class, 2: Regular Class, 3: Regular + aide    |
+| g1tgen      | Gender of teacher. Uses same classifier as gender variable              |
+| g1trace     | Teacher racial identity. Uses same classifier as in race variable       |
+| g1thighd    | Teacher's highest degree earned                                         |
+| g1tyears    | Years of experience teaching grade 1                                    |
+| g1classs    | Number of students in class                                             |
+| g1maths     | Raw math score of grade 1                                               |
+| g1surban    | City Descriptor. 1: Inner City, 2: Suburban, 3: Rural, 4: Urban         |
+| g1mathb     | Math number objectives mastered                                         |
+
+# Background
+
+
+
+Project STAR (Student/Teacher Achievement Ratio) was an educational study conducted in 1985-1989, which saw students from each grade (kindergarten through third) randomly assigned to different class sizes [@Schanzenbach_2006]. The class sizes used in this study were of varying types: small (13-17 students), regular (22-25 students), and regular with aide (full time teacher aide was also present). In addition to the students being randomly placed in these classes, the study also saw the teachers also randomly put in charge of a random class of students. Across the four years of data collection, the study saw 11,600 students, 1,330 teachers, and 79 schools participate.
+
+The primary goal of Project STAR was to attempt to understand the impact of class size with respect to academic success. In doing so, the Tennessee State Department of Education came away with a better understanding of how to facilitate learning. For motivations, there were multiple that facilitated the creation of Project STAR. The study wanted to provide evidence that supported smaller class sizes with relation to scholastic accomplishment. The department also wanted to observe socioeconomic factors that could also impact how well a student were to succeed inside the classroom. Lastly, the experiment wanted to examine the qualities and practices teachers may need to facilitate instruction in the classroom.
+
+Overall, Project STAR was a landmark experiment, with which noteworthy effort was used in finding evidence that would support the notion of reducing class size. The experiment and the findings have had major implications on our understanding of education policy and practices. Moreover, the study was one that sought to enrich the early lives of students in order to create a better future for tomorrow.
+
+# Design of Project STAR
+
+As we know from our background, Project STAR was conducted nearly four decades ago. In the sleek innovative world we now live in this is a long period of time for data techniques to transform and improve. As such, let us explore the dataset's collection and design to properly understand how to utilize it.
+
+Firstly, as far as data collection projects go, it is important for researchers to collect data in a dynamic matter to ensure that we can properly trust our data. In the case of Project STAR, the department of education knew of this and decided to distribute students and faculty randomly to attempt to alleviate any biases or external outcomes that may be present. The crux of any social experiment comes with the design and implementation, and this is no different for Project STAR.
+
+When it came to school participation, the schools selected were not random at all. The schools had to have been able to accommodate the three sizes of classes, and with that faculty as well. Additionally, the schools volunteered entry into the study, which could also reinforce the same issue mentioned before. These factors introduce a plight of the experiment, namely Heterogeneity and Insufficient Covariates.
+
+### Heterogeneity
+
+The heterogeneity present in this experiment comes from a multitude of identity factors that affect the student population at large. Variables such as socioeconomic status, academic performance, and size. If a school is able to participate in the study, it lends itself to the idea that there may be variability at play when it comes to resources and willingness to try class reduction. Heterogeneity in this context can manifest in a multitude of ways involving demographic and socioeconomic factors. For instance, in a 1999 article published by Dr. Eric Hanushek [@Hanushek_1999], he argues that "On simple grounds, however, the sample does differ from the student population in the state: 33% of the experimental students were Black, as compared with 23% for public school students in Tennessee in fall 1986". Schools that opted into Project STAR might not have shared the demographics akin to the state of Tennessee. Meaning that the schools that opt into the program did not actually represent the state as a whole, which would call into question how accurate the study is in regards to the population. Moreover, we might have students of different ethnic backgrounds appear more often in certain locations; heterogeneity also is present in this case as well. Additionally, it is also noteworthy how the school sample changed over the study, as four schools withdrew from the program. The withdrawal of a school can indicate that they may not have been able to provide what the board of education required; however, it is important to note that the reason for withdrawal was not declared.
+
+To our second point, larger schools could have more variability and distinction when we look at their populations. A larger school might miss out on some of the wider demographic of that of Tennessee. Additionally, lower income students or minorities could be more sensitive to changes in class size, if it is true class size does have a high impact. We also see this in the location of the individual in `g1surban`. People in less developed areas might have more barriers of entry in education, and thus have lower scores. Moreover, the most important aspect of the study is in the hands of the teacher. The teacher's qualities and variability can play a significant role in the quality of education. Qualms in the quality of instruction can be hidden by the size of the class. In summary, Project STAR is designed to give a uniform degree of variability across the entire study, yet it does exhibit some heterogeneity. While this may appear to be a bad thing, this is not entirely negative. We need diversity and robustness in our data, but to perform statistical analysis we will have to be cognizant of the nature of our data. Implementing diagnostics and variable transformations may help us to conduct modelling procedures in our analysis.
+
+### Insufficient Covariates
+
+Another aspect of the data we wish to stress, is that of insufficient covariates. With the data that we have available, there may be variables that can not be theoretically or empirically linked to our outcome variable [@Carroll_Morris_Keogh_2020]. Additionally, external factors that may be much more important to influencing scores are not represented in the dataset. Factors such as parental education, or child income would be a welcome addition to the study. The absence of important covariates harms us, as we would appreciate having the chance to test these crucial factors that could serve to explain a child's performance. Without them, we must find alternative ways to gauge how well a child performs academically.
+
+Another presence we should be aware of, is the idea of interaction effects within the data. As an example, perhaps terms like the years of experience a teacher has and the class size could have an interaction between each other. Moreover, the addition of interaction effects can help us alleviate bias in our data. Due to the heterogeneity we might encounter in the dataset, implementing interactions in our data could allow the relationship between our chosen covariates to mediate the intensity between one another. The variance among subgroups and levels of the covariates should be moderated by the implementation of them. Interaction effects can carry nuanced relationships and serve to help us conduct more robust analysis in answering our research questions.
+
+# Initial Analysis Caveats
+
+From the initial analysis report, we discovered a fair amount from the preliminary research. We observed that there may be issues with the data, namely the missingness, non-compliance, heterogeneity, insufficient covariates, and non-feasible assumptions. We observed a lot of missing data within the study, and this did not change when we procured the data from the Harvard dataverse. Furthermore, despite the robust design of Project STAR, error was still present in its design. For instance, issues surrounding students dropping out of the program or missing records between years is plentiful throughout the study. Four schools also notably dropped out of the program over the study's lifespan. Next, we also saw the idea of non=feasible assumptions regarding the study. In the prior section, we saw this in the fact that schools did not have perfect compliance. Students could switch between classes from one year to the next, staffing changes, and resources were also involved in the process. We also know that Project STAR was a completely randomized process, but we have no information on how this was done. It is unknown whether or not practical issues regarding the randomized assignments were present, meaning we have no insight into the actual randomization and assignment of staff [@Von_Hippel_Wagner_2018]. Moreover, we also have no clue if external factors regarding curriculum or policy were kept constant throughout the program. These factors may have more influence on the effect of class size and student performance, yet we can not keep the assumption that the experiment was flawless.
+
+Another issue occurring in the initial analysis report was the primitive model we selected. Given the issues we find within the study, it would perhaps be helpful for us to choose a model that includes interaction effects. In addition, interaction effects may help us mitigate possible pitfalls in our data, which we talked about in the prior sections. With the experimental modelling done in the initial analysis, we observed that for we would not be able to reject the null hypothesis for every significance level. Because of this, we hope that we can find a better model that can work more robustly and effectively for our research questions at hand. Also, in the final report, we wish to look for more patterns regarding the missingness briefly. It is not a main focus, but it would be interesting to discover if there is a pattern surrounding missing data, and how we go about procuring our teacher summary dataset. Another topic that we observed within the initial report, was that we might be due for a transformation on the dependent variable. We observed that we might have non-normality within our data. When testing our model however, we want to first test it without transformation. The reasoning for this, is so that we can display robustness in our model with and without transformation.
+
+Next, let us talk about the procurement of data. In the initial analysis report, we used multiple join functions with the `dplyr` library in order to group teachers based off of the variables such as ethnicity, gender, class size, and experience. In our case now, we use the Harvard Dataverse's dataset, which possesses the `g1tchid` variable. We will group the students on this variable instead of the aforementioned to perform a more uniform join. Additionally, we will use the same data selection from the prior report, but now include more variables. Also, we will use the mean of raw math scores of the dependent variable. Previously, we used the mean to conduct our analyses in the initial report. Because our aim is for the model to be more robust and improved, hopefully we can prove that the mean was not the issue, and that it was the primitive model that was the hindrance. We choose to use the raw math scores to be the dependent variable, as we do not know whether or not the percent or median versions of the raw scores were changed in the correct way.
+
+# Descriptive Analysis
+
+<br/><br/>
+```{r echo=FALSE, include=FALSE}
+library(AER)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(extrafont)
+library(knitr)
+library(GGally)
+library(ggrepel)
+library(gridExtra)
+library(viridis)
+library(hrbrthemes)
+library(ISLR)
+library(stats)
+library(SuppDists)
+library(foreign)
+library(haven)
+```
+
+```{r echo=FALSE, include=FALSE}
+STAR <- read_sav("/Users/fish/Documents/STA 207/STAR_Students.sav")
+
+# Selecting only g1 variables and other demographic info
+data <- STAR %>% select(stdntid, gender, race, g1classtype, g1classsize, g1schid, g1surban, g1tchid, g1tgen, g1trace, g1thighdegree, g1tcareer, g1tyears, g1freelunch, g1promote, g1specin, g1mathbsraw, g1mathbsobjraw, g1mathbsobjpct)
+
+
+summary(data$gender)
+summary(data$race)
+summary(data$g1classtype)
+summary(data$g1surban)
+```
+
+
+```{r echo=FALSE, include=FALSE}
+# We lose out on some in this method
+
+teacher.summary <- data %>%
+  group_by(g1tchid) %>%
+  summarise(mean_g1mathbsraw = mean(g1mathbsraw, na.rm = TRUE),
+            median_g1mathbsraw = median(g1mathbsraw, na.rm = TRUE),
+           mean_g1mathbsobjraw = mean(g1mathbsobjraw, na.rm = TRUE),
+            median_g1mathbsobjraw = median(g1mathbsobjraw, na.rm = TRUE),
+           mean_g1mathbsobjpct = mean(g1mathbsobjpct, na.rm = TRUE),
+            median_g1mathbsobjpct = median(g1mathbsobjpct, na.rm = TRUE),
+            g1classtype = first(g1classtype),
+            g1classsize = first(g1classsize),
+            g1schid = first(g1schid),
+            g1surban = first(g1surban),
+            g1tgen = first(g1tgen),
+            g1trace = first(g1trace),
+            g1thighdegree = first(g1thighdegree),
+            g1tcareer = first(g1tcareer),
+            g1tyears = first(g1tyears),
+            g1freelunch = first(g1freelunch),
+            g1promote = first(g1promote),
+            g1specin = first(g1specin),
+            g1mathbsraw = first(g1mathbsraw),
+            g1mathbsobjpct = first(g1mathbsobjpct))
+
+teacher.summary <- na.omit(teacher.summary)
+
+length(unique(teacher.summary$g1tchid))
+
+length(unique(teacher.summary$g1schid))
+```
+
+```{r echo = FALSE, include = FALSE}
+# This is probably the better way to do this, as we don't have any NAs and have more teachers
+test.2 <- na.omit(data)
+
+sum(is.na(data))
+
+teacher.summary <- test.2 %>%
+  group_by(g1tchid) %>%
+  summarise(mean_g1mathbsraw = mean(g1mathbsraw, na.rm = TRUE),
+            median_g1mathbsraw = median(g1mathbsraw, na.rm = TRUE),
+           mean_g1mathbsobjraw = mean(g1mathbsobjraw, na.rm = TRUE),
+            median_g1mathbsobjraw = median(g1mathbsobjraw, na.rm = TRUE),
+           mean_g1mathbsobjpct = mean(g1mathbsobjpct, na.rm = TRUE),
+            median_g1mathbsobjpct = median(g1mathbsobjpct, na.rm = TRUE),
+            g1classtype = first(g1classtype),
+            g1classsize = first(g1classsize),
+            g1schid = first(g1schid),
+            g1surban = first(g1surban),
+            g1tgen = first(g1tgen),
+            g1trace = first(g1trace),
+            g1thighdegree = first(g1thighdegree),
+            g1tcareer = first(g1tcareer),
+            g1tyears = first(g1tyears),
+            g1freelunch = first(g1freelunch),
+            g1promote = first(g1promote),
+            g1specin = first(g1specin),
+            g1mathbsraw = first(g1mathbsraw),
+            g1mathbsobjpct = first(g1mathbsobjpct))
+
+length(unique(teacher.summary$g1tchid))
+```
+
+```{r echo=FALSE, fig.align = 'center'}
+# Boxplot Binned by Classtype
+
+plot1 <- teacher.summary %>% 
+    ggplot(aes(x = factor(g1classtype, levels = c(1, 2, 3),
+                        labels = c("Small Class", "Regular Class", "Regular + aide")), y=mean_g1mathbsraw, fill = factor(g1classtype, levels = c(1, 2, 3),
+                        labels = c("Small Class", "Regular Class", "Regular + aide")))) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
+    theme_classic() +
+    theme_ipsum() + 
+    theme(legend.position="none",
+    plot.title = element_text(size=11)) +
+    ggtitle("Median First Grade Math Scores Binned by Class Type") +
+    xlab("School") +
+    ylab("Median Math Score")
+
+
+# Boxplot binned by environment type
+plot2 <- teacher.summary %>% 
+     ggplot(aes(x = factor(g1surban, levels = c(1, 2, 3, 4),
+                        labels = c("Inner City", "Suburban", "Rural", "Urban")), y=mean_g1mathbsraw, fill = factor(g1surban, levels = c(1, 2, 3, 4),
+                        labels = c("Inner City", "Suburban", "Rural", "Urban")))) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6, option="D") +
+    theme_classic() +
+    theme_ipsum() + 
+    theme(legend.position="none",
+    plot.title = element_text(size=11)) +
+    ggtitle("Mean First Grade Math Scores Binned by School Setting") +
+    xlab("Environment") +
+    ylab("Mean Math Score")# +
+
+# width
+plot1 <- plot1 + theme(plot.margin = margin(r = 5))
+plot2 <- plot2 + theme(plot.margin = margin(l = 5))
+
+# Alignment
+gridExtra::grid.arrange(plot1, plot2, ncol = 2)
+
+```
+
+```{r echo=FALSE, fig.align='center'}
+
+# Outcome vs School IDs Top Down
+top_mean_scores <- teacher.summary %>%
+  group_by(g1schid) %>%
+  summarise(mean_math_score = mean(mean_g1mathbsraw, na.rm = TRUE)) %>%
+  arrange(desc(mean_math_score)) %>%
+  head(5)
+
+kable(top_mean_scores, caption = "Top 5 School IDs by Mean Math Score", align = "c")
+
+# Using entire data frame
+
+
+# SchoolIDs with the most count
+top_count_schools <- teacher.summary %>%
+  group_by(g1schid) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  head(5)
+
+kable(top_count_schools, caption = "Top 5 School IDs by Count", align = "c")
+
+# Using entire data frame
+big.count <- na.omit(data) %>%
+  group_by(g1schid) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  head(5)
+
+kable(big.count, caption = "Top 5 School IDs by Count in Wide Encompassing Dataset", align = "c")
+
+```
+
+```{r echo = FALSE, include = FALSE}
+table(teacher.summary$g1surban)
+```
+
+Producing a couple plots, we are able to surmise some insights into our variables. There does appear to be a difference in means within the class sizes, but also the location parameter. Notably, inner city schools appear to have a much lower mean math score compared to the other environments. It should be stated that the rural schools have 157 instances of occurrence, which is double the amount of the suburban group which is the second most represented group. We also produced a couple of tables to help us look into which schools are represented more often. We saw that the schools represented within the teacher summary dataframe did not match any of the schools with the most amount of teachers. However, when using the entire dataframe we saw four out of five schools had identical matches with regards to school ID. This makes sense when thinking logistically, but it was good to assuage our fears. 
+
+```{r echo=FALSE, fig.width=8, fig.height=4, fig.align = 'center'}
+par(mfrow=c(1,2))
+# Histogram of teacher distribution of math scores
+ggplot(teacher.summary, aes(x = g1mathbsraw)) +
+  geom_histogram(binwidth = 5, fill = "lemonchiffon", color = "black") +
+  labs(title = "Distribution of First Grade Math Scores",
+       x = "Math Score",
+       y = "Frequency") +
+    theme_classic() +
+    theme_ipsum() + 
+    theme(legend.position="none",
+    plot.title = element_text(size=11))
+
+# Scatterplot of years and Math Scores Mean
+
+teacher.summary %>% 
+  ggplot(aes(x = g1tyears, y = mean_g1mathbsraw)) +
+  geom_point(color = "black", size = 3) + 
+  geom_point(color = "mistyrose", size = 2) +
+  scale_fill_viridis(discrete = TRUE, alpha = 0.6, option = "H") + 
+  theme_classic() +  
+  theme_ipsum() + 
+  theme(legend.position = "none",  
+        plot.title = element_text(size = 11)) +
+  ggtitle("Mean First Grade Math Scores by Years of Teaching Experience") +  
+  xlab("Years of Teaching Experience") +  
+  ylab("Mean Math Score")
+
+# gridExtra::grid.arrange(plot1, plot2, ncol = 2)
+```
+We next wanted to look at a distribution of our mean math scores as well as the intersection between math scores and years of teaching experience. For our mean math scores, we noted the interesting shape that this distribution took shape in. Our distribution is seemingly very skewed to the left, and we have most of our values within the forty range. Going to teaching experience, there does not seem to be any discernible pattern within the data in regards to score and teaching experience. We do notice however that those with more teaching experience becomes more sparse as we move along, but again no discernible difference. 
+
+From these preliminary notions, we hypothesize that class size and location of a student plays a sizable role in their education. We also see that we have different sized samples for each level of our location and class size, so we also want to be cognizant of this presence. These factors having strong impact would make sense in theory, as the class type is directly correlated within the classroom, whilst one's location ties into what resources and opportunities they have at their disposal. Analyzing these terms, we aim to investigate the crossroads between classroom and identity background.
+
+# Inferential Analysis | Modeling
+
+Given all that we have considered, let us fit a model emblematic of our research questions and tasks at hand. First, we choose to use an imbalanced two way ANOVA model with four different parameters. $\mu_{..}$ represents our population mean in the overall raw mean math scores of grade one teachers. $\alpha_i$ represents our class size indicator, with possible values $i = 1, 2, 3$ for each of the respective types. $\beta_j$ represents our school ID indicator with possible values $j = 1, 2, ..., 76$ for each respective school. $\tau_k$ represents the location parameter corresponding to values of $k = 1, 2, 3, 4$. In other words, $\alpha_i$ corresponds to the `g1classtype` variable, $\beta_j$ corresponds to the `g1schid` variable, and $\tau_k$ corresponds to the `g1surban` variable. In addition, we also have our error terms represented by $\epsilon_{ijk}$. This model follows the normal ANOVA assumptions where {$\epsilon_{ijk}$} are $\text{i.i.d} ~ N(0, \sigma^2)$, observations are sampled independently from one another, the variance of residuals is consistent for all levels of factors, and are data is normal. The one caveat from our imbalanced design is that no longer is the statement $SSTO=SSA+SSB+SSAB+SSE$ true. We chose this model after strenuous testing with other models as well. Additionally, we wanted to add multiple covariates to the model as it could help prevent heterogeneity, explain more of the data, and provide more insight into the study. First, we tested multiple models pitting interaction effects between various combinations of class type, school ID, years of experience and location. In our first go around, the years of experience were very non-significant, so we decided to remove it from the model. This aligned with what we thought from the descriptive statistics section, as we did not have a discernible pattern associated with years of experience and math score. Given our research questions, we were interested in these three variables, but we also wanted to include interaction effects to try and explain other areas of the data without overfitting. Thus, we used a full model given by the equation $Y_{ijk} = \mu_{..} + \tau_i + \alpha_j + \beta_k + (\alpha\tau)_{ik} + \epsilon_{ijk}$. We then used the F test for testing the presence of interactions; using the following hypotheses.
+
+$$H_0: (\alpha\tau_{ik}) = 0 \text{.  vs.  } H_a: \text{Not all } (\alpha\tau_{ik}) \text{ equal zero}$$
+
+```{r echo=FALSE, include=FALSE}
+# Our Interaction Anova Model
+anova.fit <- aov(mean_g1mathbsraw ~ factor(g1classtype) + factor(g1surban) + factor(g1schid) + factor(g1surban):factor(g1classtype), data = teacher.summary)
+
+summary(anova.fit)
+```
+```{r echo=FALSE, include=FALSE}
+anewva.fit <- aov(mean_g1mathbsraw ~ factor(g1classtype) + factor(g1surban) + factor(g1schid) + g1tyears +  factor(g1surban):factor(g1classtype) + factor(g1surban):g1tyears, data = teacher.summary)
+
+summary(anewva.fit)
+```
+
+```{r echo = FALSE}
+# Create full model with interactions
+full_model=lm(mean_g1mathbsraw ~ factor(g1classtype) + factor(g1surban) + factor(g1schid) + factor(g1surban)*factor(g1classtype), data = teacher.summary)
+
+# Remove interaction
+reduced_model=lm(mean_g1mathbsraw ~ factor(g1classtype) + factor(g1surban) + factor(g1schid), data = teacher.summary)
+
+# F test
+full.red = anova(reduced_model,full_model)
+
+# Summary Table
+summary_table <- kable(full.red, caption = "ANOVA Table of Full Model vs Reduced Model")
+summary_table
+```
+
+
+Under this test, we received a P value of $0.4909$ and thus we fail to reject the null hypothesis. Because of this and the interaction models woes, we prefer the reduced model as our figures were significant across all variables. Going from the previous model in the initial analysis report, we did not reject the null hypothesis to the same severity as in this model. This would imply that the added parameter helps to explain the dependent variable, aiding in the model in its explainability. Displayed by our following ANOVA table output, we see that all of our values are significant in this model. Thus from our research questions, we answer yes to all of them. 
+
+```{r echo=FALSE}
+anova.red <- aov(mean_g1mathbsraw ~ factor(g1classtype) + factor(g1surban) + factor(g1schid), data = teacher.summary)
+
+# Summary Table
+summary_table <- kable(anova(anova.red), caption = "ANOVA Table of our Final Model")
+summary_table
+```
+
+```{r echo = FALSE, fig.width= 10, fig.align='center'}
+# Taken from Chapter 4 Anova II
+par(mfrow = c(1, 2))
+
+plot(TukeyHSD(anova.red, "factor(g1classtype)"), col = "brown")
+plot(TukeyHSD(anova.red, "factor(g1surban)"), col = "brown")
+```
+
+Next, we wanted to see which class size group, and which location group had the highest means amongst each group. To do so, we used a 95% Tukey Confidence interval to assess the pairwise differences in each group. From our findings, the Small Class size group had the highest mean on average, as the differences between the other two groups and the Small Class means were both below zero. Additionally, we saw that the Inner City group had a much lower mean compared to the rest of the groups, as it was the only set of pairwise differences that did not contain zero in its interval. This aligns with our inferences made in our early analysis, as we saw that the means of those groups were more severe compared to the others. 
+
+
+
+# Sensitivity Analysis
+
+We perform sensitivity analysis with our data to see if we can conclude a robust encompassing model. Looking at our preliminary diagnostic plots on our ANOVA model, it appears we have a slight departure from normality as evidenced in our QQ-Plot. We have a couple of leverage points as well, but it does not seem to be too overbearing. We also see a clump of residuals within the Residuals vs Leverage plot. All in all, let us use alternative tests to conclude a decision rule. 
+```{r echo=FALSE, fig.align='center'}
+# Going to try to do a box-cox on this depending on lambda value
+
+par(mfrow=c(2,2))
+plot(anova.fit)
+```
+
+```{r echo=FALSE, include = FALSE}
+residuals=anova.fit$residuals;
+hist(residuals)
+```
+
+```{r echo=FALSE, include=FALSE}
+# Hartley Test
+
+# Calculate the variances for each group:
+(vars <- tapply(teacher.summary$mean_g1mathbsraw, teacher.summary$g1classtype, var))
+
+alpha=0.05;
+
+df <- sum(table(teacher.summary$g1classtype)) - length(vars)
+
+ns=as.numeric(table(teacher.summary$g1classtype));
+
+H.stat=max(vars)/min(vars);
+
+# Both df and k only take integers:
+cv = qmaxFratio(1-alpha,df=floor(sum(ns)/length(ns)-1),k=length(ns))
+paste("H Critical Value:", cv)
+
+paste("H Statistic:", H.stat)
+```
+
+```{r echo=FALSE, include=FALSE}
+# KW test | Non-Parametric
+
+kruskal.test(mean_g1mathbsobjraw ~ g1classtype, data=teacher.summary)
+
+# This is so much different than initial analysis
+```
+We conducted the Hartley test as well as the non-parametric, Kruskal-Wallis test to test our assumptions. For both tests, we will use an $\alpha = 0.05$ significance level for consistency. In our Hartley test for equal variances, we use the following decision rules. 
+
+$$H_0: \sigma_1 =  . . .  = \sigma_r \text{  vs   } H_{a}: \text{not all } \sigma's \text{ are equal}$$
+Running the Hartley test on our data, we received an H Critical Value of $1.57$ and an H Statistic of $1.21$. Given these values under our predescribed significance level, we do not have enough evidence to reject the claim that the variances of class size are equivalent to each other. 
+
+Now let us assess for normality within our dataset. We use the non-parametric Kruskal Wallis test as it can be applied to datasets without making any assumptions of the data. In this test, we observed that our p value was below our significance level, and thus we do not have normality with our data. We found that we rejected the null hypothesis much harder than we did in the initial analysis report. For instance, in the initial analysis report we obtained a Kruskal Wallis P value of 0.02 vs this report we saw one that was nigh zero. 
+
+$$H_0: \text{The population means of the class sizes are equal} \text{  vs   } H_{a}: \text{not all class size population means are equal}$$
+Because we do not have normality, let us try to obtain normality before we fit our model again. We apply a box-cox log transformation to the data as the lambda maximizer is at zero. Refitting the data, we see that we maintain the same rules regarding significance in our ANOVA summary. The results seen after refitting the data align with the conclusions we came to before we refit the data. From our outputted table, we had significant figures across all of our figures, and thus our model is robust. The p values associated with each respective variable was less than ten to the seventh power for all. 
+
+```{r echo=FALSE}
+alogva.fit <- aov(log(mean_g1mathbsraw) ~ factor(g1classtype) + factor(g1surban) + factor(g1schid), data = teacher.summary)
+
+log.table <- kable(anova(alogva.fit), caption = "ANOVA Table of our Log Transformed Model")
+log.table
+```
+```{r echo=FALSE, include = FALSE}
+library(MASS)
+boxcox.model = boxcox(mean_g1mathbsraw ~ factor(g1classtype) + factor(g1surban) + factor(g1schid), data = teacher.summary)
+lambda = boxcox.model$x[which.max(boxcox.model$y)]
+
+lambda
+```
+
+```{r echo= FALSE, include=FALSE}
+alogva.fit <- aov((mean_g1mathbsraw)**2 ~ factor(g1classtype) + factor(g1surban) + factor(g1schid), data = teacher.summary)
+
+par(mfrow=c(2,2))
+
+plot(alogva.fit)
+```
+
+
+# Discussion
+
+In our analysis, we worked to understand the intersection between student performance, and the factors that affect academic success. By use of statistical modeling and many examination, we attempted to highlight the complex intersection between these varied elements and the educational system. The research provided by Project STAR, while conducted many years ago, is still tantamount to the modern world and our understanding of education. Leveraging the dataset, we created a new comprehensive dataset to analyze with specific research questions. Performing descriptive analysis, we created baseline inferences that we sought to test with more involved analysis and technique. 
+
+In our ANOVA model, we concluded that there are multiple important variables that can affect a child's academic success, and that it is important to leverage the elements we can control in order to find prosperity. With our research questions, we specifically looked at models involving location, class size, school, years of experience, and the interactions between them. In the final model, we determined that location, class size, and school were our significant predictors. 
+
+When we think about modern day education, we understand that the trials and tribulations faced by prospective academics is what ultimately molds us to be the student we are. For students in different areas and avenues, this can be indicative of what education means to them. There is more to be told than what is taught in the classroom, and experiences carry profound significance that can offer insight into the sacredness of education. 
+
+Students in different situations involving area code, economics, and race, will play a different game within the world of academia. The personal narratives and upbringings that many are imbued by, gives credence to the ever evolving landscape of education. Using Project STAR as a springboard for society and education, we see that there are still many ways in which the state of schooling can evolve. Studying this myriad of factors is important for us to understand clearly how we interpret education, and how we can act as conducive agents to the success of the generation of tomorrow. 
+
+# References
+
+<div id="refs"></div>
+
+# Code Appendix
+
+```{r getlabels, echo = FALSE}
+labs = knitr::all_labels()
+labs = labs[!labs %in% c("setup","getlabels","allcode")]
+```
+
+```{r allcode, ref.label = labs, eval = FALSE}
+```
+
+```{r}
+# Notes
+######################################
+
+# Could heterogeneity influence presence of NAs?
+
+# Should I complete case the NAs for the class type and urban value? Meaning get rid of all of them. Can I run sensitivity analysis first? 
+
+# What should I reference in the Initial Analysis Caveat section? Should it just be like what my findings were from the data?
+
+# In my model, I wanted to experiment by use of Location (g1surban). Is it necessary to do so if I'm also using the school identifier as regressor? Should I instead pivot my research question?
+
+# In my research questions, I decided not to focus on interaction effects. Is this sufficient for when I declare my model? Meaning when I  choose the model in inferential, is this reasoning all right?
+
+# I chose g1rawmathscore because I didn't want to have a variable that was already transformed, is that a viable reason to use this variable?
+
+# I tried to use location in my model, yet I kept getting NULL results in the model. I want to emphasize location in my model, as I believe it could play a role especially as I've highlighted heterogeneity. 
+
+# In my testing, I selected the variables that I wanted to keep, grouped by teacher id, calculated the means and medians into new columns, and then omitted any entries with which were missing NAs in the selected variables. Could this introduce my data to bias? If I transform my data to make it normal, will i be okay proceeding onwards?
+```
+
+```{r}
+# How do including additional covariates make the model better?
+
+# Explain why your initial analysis is sufficient
+
+# Need more than just heterogeneity. 
+
+# Explore each variable more in descriptive
+
+# What if the population in different schools are different? How does that influence heterogeneity.
+
+# How long have they been in the project? 
+
+
+# Mention any possible caveat, show that you are aware of the issue and then focus on the ones I've picked. 
+
+# Test multiple models and hopefulyy your decision reagarding class size is robust 
+
+# Mention that you rejected everything in base model, but then u do sensitivity to be sure. 
+
+# Exploring interaction terms in model with location and schoolid
+
+# Initial analysis caveats are YOUR criticisms
+
+# Convince them that Heterogeneity is a big issue
+
+# NEEDS TO BE IN HTML
+```
